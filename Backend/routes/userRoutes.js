@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { createUser } = require('../controllers/registrationController/userController');
-const { createAlumni } = require('../controllers/alumniController');
-const { createFaculty } = require('../controllers/facultyController');
+const { createAlumni } = require('../controllers/registrationController/alumniController');
+const { createFaculty } = require('../controllers/registrationController/facultyController');
 const { createStudent } = require('../controllers/studentController');
 
 // User creation route

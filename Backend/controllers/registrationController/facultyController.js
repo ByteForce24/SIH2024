@@ -1,6 +1,6 @@
 const { ref, set, get } = require('firebase/database');
-const database = require('../config/firebase-config');
-const Faculty = require('../models/FacultySchema');
+const database = require('../../config/firebase-config');
+const Faculty = require('../../models/FacultySchema');
 
 const createFaculty = async (req, res) => {
   try {
