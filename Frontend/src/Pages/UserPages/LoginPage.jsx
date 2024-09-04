@@ -1,8 +1,11 @@
 import React from 'react'
 import img1 from '../../assets/LoginImg.png'
+import Navbar from '../../Components/UserComponent/Navbar'
 
 const LoginPage = () => {
   return (
+    <>
+    <Navbar />
     <div className="login-main-container flex w-full h-screen p-[30px]  ">
         <div className="login-left-container flex flex-col justify-center items-center  w-[50%] gap-y-[30px] h-screen pl-[0px] pr-[0px] max-md: w-full">
             <div className="login-top-container"><p className='text-[50px] font-semibold max-md:text-[30px]'>Connected by education, <br/> grow together.</p></div>
@@ -52,6 +55,8 @@ const LoginPage = () => {
             </form>
         </div>
     </div>
+    </>
+
   )
 }
 
