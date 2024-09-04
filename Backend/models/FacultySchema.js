@@ -1,146 +1,114 @@
-const { ref, set, get, remove } = require('firebase/database');
-const database = require('../config/firebase-config');
-const bcrypt = require('bcrypt');
-const { createAccessToken, createRefreshToken } = require('../utils/tokenUtils');
-const Student = require('../models/StudentSchema');
-const Alumni = require('../models/AlumniSchema');
-const Faculty = require('../models/FacultySchema'); // Import Faculty model
+// models/FacultySchema.js
 
-const createUser = async (req, res) => {
-  try {
-    const { username, fullName, role, email, mobileNumber, gender, aadharNumber, password, studentData, alumniData, facultyData } = req.body;
-
-    if (!username || username.length > 50) {
-      return res.status(400).json({ error: 'Invalid username' });
+class Faculty {
+  constructor({
+    facultyID,
+    userID,
+    facultyEnrollmentNumber,
+    collegeName,
+    branchName,
+    description = "",
+    followingCount = 0,
+    following = {},
+    followersCount = 0,
+    followers = {},
+    collegeIDPhotoLink,
+    savedPostsCount = 0,
+    savedPosts = {},
+    calendar = {},
+    achievement = {},
+    areaOfExpertise = {},
+    contactEmail = "",
+    links = {},
+    profilePhotoLink = "http://res.cloudinary.com/default.jpg",
+    profileLink,
+  }) {
+    if (typeof facultyID !== 'string' || facultyID.length === 0 || facultyID.length > 50) {
+      throw new Error('Invalid facultyID');
     }
-
-    if (!['student', 'alumni', 'faculty'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role' });
+    if (typeof userID !== 'string' || userID.length === 0 || userID.length > 50) {
+      throw new Error('Invalid userID');
     }
-
-    const userRef = ref(database, `users/${username}`);
-    const snapshot = await get(userRef);
-
-    if (snapshot.exists()) {
-      return res.status(400).json({ error: 'Username already exists' });
+    if (typeof facultyEnrollmentNumber !== 'number') {
+      throw new Error('Invalid facultyEnrollmentNumber: Must be a number');
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = {
-      username,
-      fullName,
-      role,
-      email,
-      mobileNumber: Number(mobileNumber),
-      gender,
-      aadharNumber,
-      registrationTimeStamp: new Date().toISOString(),
-      password: hashedPassword,
-    };
-
-    // Save user data first
-    await set(userRef, user);
-
-    try {
-      // Save student-specific data
-      if (role === 'student' && studentData) {
-        const student = new Student({
-          studentID: studentData.studentID,
-          userID: username,
-          enrollmentNumber: studentData.enrollmentNumber,
-          collegeName: studentData.collegeName,
-          branchName: studentData.branchName,
-          semester: studentData.semester,
-          description: studentData.description,
-          followingCount: studentData.followingCount,
-          following: studentData.following,
-          profilePhotoLink: studentData.profilePhotoLink,
-          collegeIDPhotoLink: studentData.collegeIDPhotoLink,
-          savedPostsCount: studentData.savedPostsCount,
-          savedPosts: studentData.savedPosts,
-          skills: studentData.skills,
-          profileLink: studentData.profileLink,
-        });
-
-        const studentRef = ref(database, `students/${username}`);
-        await set(studentRef, student.toObject());
-      }
-
-      // Save alumni-specific data
-      if (role === 'alumni' && alumniData) {
-        const alumni = new Alumni({
-          alumniID: alumniData.alumniID,
-          userID: username,
-          enrollmentNumber: alumniData.enrollmentNumber,
-          collegeName: alumniData.collegeName,
-          branchName: alumniData.branchName,
-          description: alumniData.description,
-          followingCount: alumniData.followingCount,
-          following: alumniData.following,
-          followersCount: alumniData.followersCount,
-          followers: alumniData.followers,
-          collegeIDPhotoLink: alumniData.collegeIDPhotoLink,
-          savedPostsCount: alumniData.savedPostsCount,
-          savedPosts: alumniData.savedPosts,
-          calendar: alumniData.calendar,
-          employmentStatus: alumniData.employmentStatus,
-          jobTitle: alumniData.jobTitle,
-          achievement: alumniData.achievement,
-          areaOfExpertise: alumniData.areaOfExpertise,
-          contactEmail: alumniData.contactEmail,
-          links: alumniData.links,
-          profilePhotoLink: alumniData.profilePhotoLink,
-          profileLink: alumniData.profileLink,
-        });
-
-        const alumniRef = ref(database, `alumni/${username}`);
-        await set(alumniRef, alumni.toObject());
-      }
-
-      // Save faculty-specific data
-      if (role === 'faculty' && facultyData) {
-        const faculty = new Faculty({
-          facultyEnrollmentNumber: facultyData.facultyEnrollmentNumber,
-          userID: username,
-          collegeName: facultyData.collegeName,
-          departmentName: facultyData.departmentName,
-          designation: facultyData.designation,
-          yearsOfExperience: facultyData.yearsOfExperience,
-          publicationsCount: facultyData.publicationsCount,
-          profilePhotoLink: facultyData.profilePhotoLink,
-          profileLink: facultyData.profileLink,
-          researchAreas: facultyData.researchAreas,
-          officeNumber: facultyData.officeNumber,
-          contactEmail: facultyData.contactEmail,
-          coursesTaught: facultyData.coursesTaught,
-          projects: facultyData.projects,
-          eventsOrganized: facultyData.eventsOrganized,
-        });
-
-        const facultyRef = ref(database, `faculty/${username}`);
-        await set(facultyRef, faculty.toObject());
-      }
-
-      // Create JWT tokens
-      const accessToken = createAccessToken({ username });
-      const refreshToken = createRefreshToken({ username });
-
-      res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      });
-
-      res.status(201).json({ message: 'User created successfully', accessToken });
-    } catch (err) {
-      // Rollback user data if there's an error in saving role-specific data
-      await remove(userRef);
-      throw err;
+    if (typeof collegeName !== 'string' || collegeName.length > 100) {
+      throw new Error('Invalid collegeName');
     }
-  } catch (error) {
-    res.status(500).json({ error: 'Error creating user: ' + error.message });
+    if (typeof branchName !== 'string' || branchName.length > 50) {
+      throw new Error('Invalid branchName');
+    }
+    if (typeof description !== 'string') {
+      throw new Error('Invalid description');
+    }
+    if (typeof followingCount !== 'number' || followingCount < 0) {
+      throw new Error('Invalid followingCount');
+    }
+    if (typeof followersCount !== 'number' || followersCount < 0) {
+      throw new Error('Invalid followersCount');
+    }
+    if (typeof collegeIDPhotoLink !== 'string' || collegeIDPhotoLink.length > 200) {
+      throw new Error('Invalid collegeIDPhotoLink');
+    }
+    if (typeof savedPostsCount !== 'number' || savedPostsCount < 0) {
+      throw new Error('Invalid savedPostsCount');
+    }
+    if (typeof profilePhotoLink !== 'string' || profilePhotoLink.length > 200) {
+      throw new Error('Invalid profilePhotoLink');
+    }
+    if (typeof profileLink !== 'string' || profileLink.length > 100) {
+      throw new Error('Invalid profileLink');
+    }
+    if (typeof contactEmail !== 'string' || contactEmail.length > 50 || !contactEmail.match(/^\S+@\S+\.\S+$/)) {
+      throw new Error('Invalid contactEmail');
+    }
+    
+    this.facultyID = facultyID;
+    this.userID = userID;
+    this.facultyEnrollmentNumber = facultyEnrollmentNumber;
+    this.collegeName = collegeName;
+    this.branchName = branchName;
+    this.description = description;
+    this.followingCount = followingCount;
+    this.following = following;
+    this.followersCount = followersCount;
+    this.followers = followers;
+    this.collegeIDPhotoLink = collegeIDPhotoLink;
+    this.savedPostsCount = savedPostsCount;
+    this.savedPosts = savedPosts;
+    this.calendar = calendar;
+    this.achievement = achievement;
+    this.areaOfExpertise = areaOfExpertise;
+    this.contactEmail = contactEmail;
+    this.links = links;
+    this.profilePhotoLink = profilePhotoLink;
+    this.profileLink = profileLink;
   }
-};
 
-module.exports = { createUser };
+  toObject() {
+    return {
+      facultyID: this.facultyID,
+      userID: this.userID,
+      facultyEnrollmentNumber: this.facultyEnrollmentNumber,
+      collegeName: this.collegeName,
+      branchName: this.branchName,
+      description: this.description,
+      followingCount: this.followingCount,
+      following: this.following,
+      followersCount: this.followersCount,
+      followers: this.followers,
+      collegeIDPhotoLink: this.collegeIDPhotoLink,
+      savedPostsCount: this.savedPostsCount,
+      savedPosts: this.savedPosts,
+      calendar: this.calendar,
+      achievement: this.achievement,
+      areaOfExpertise: this.areaOfExpertise,
+      contactEmail: this.contactEmail,
+      links: this.links,
+      profilePhotoLink: this.profilePhotoLink,
+      profileLink: this.profileLink,
+    };
+  }
+}
+
+module.exports = Faculty;

@@ -3,7 +3,7 @@ const router = express.Router();
 const { createUser } = require('../controllers/registrationController/userController');
 const { createAlumni } = require('../controllers/registrationController/alumniController');
 const { createFaculty } = require('../controllers/registrationController/facultyController');
-const { createStudent } = require('../controllers/studentController');
+const { createStudent } = require('../controllers/registrationController/studentController');
 
 // User creation route
 router.post('/register', createUser);
